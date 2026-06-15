@@ -292,7 +292,7 @@ export default function SetupPage() {
                 <span>How to Play</span>
               </h2>
 
-              <div className="flex flex-col gap-4 text-sm text-zinc-400 leading-relaxed text-right rtl">
+              <div className="flex flex-col gap-4 text-sm text-zinc-400 leading-relaxed" dir="rtl">
                 <div className="border-r-2 border-emerald-500/40 pr-3">
                   <h3 className="font-bold text-zinc-200 mb-1">הכנה למכירה 🔨</h3>
                   <p>הקבוצות מתחילות עם תקציב כספי (ברירת מחדל: $1,000) אותו הן מנהלות לכל אורך המשחק.</p>

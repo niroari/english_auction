@@ -307,12 +307,12 @@ export default function GamePage() {
 
             {/* Revealed Answer Overlay & Explanation */}
             {isRevealed ? (
-              <div className={`w-full p-6 rounded-2xl border text-right mt-6 animate-fadeIn ${
+              <div className={`w-full p-6 rounded-2xl border mt-6 animate-fadeIn ${
                 currentSentence.isCorrect 
                   ? "bg-emerald-950/20 border-emerald-500/20 text-emerald-100" 
                   : "bg-rose-950/20 border-rose-500/20 text-rose-100"
-              }`}>
-                <div className="flex flex-row-reverse items-center gap-2 mb-2 font-extrabold text-lg">
+              }`} dir="rtl">
+                <div className="flex items-center gap-2 mb-2 font-extrabold text-lg">
                   {currentSentence.isCorrect ? (
                     <>
                       <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -326,12 +326,12 @@ export default function GamePage() {
                   )}
                 </div>
                 
-                <p className="text-sm text-zinc-300 leading-relaxed mb-4" dir="rtl">
+                <p className="text-sm text-zinc-300 leading-relaxed mb-4">
                   {currentSentence.explanation}
                 </p>
 
                 {currentSentence.correction && (
-                  <div className="border-t border-zinc-900 pt-3 text-left">
+                  <div className="border-t border-zinc-900 pt-3 text-left" dir="ltr">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase block tracking-wider mb-1">Correct Version:</span>
                     <span className="font-mono text-sm sm:text-base font-semibold text-emerald-400 bg-zinc-950/80 px-3 py-1.5 rounded-lg border border-zinc-900 inline-block">
                       {currentSentence.correction}
