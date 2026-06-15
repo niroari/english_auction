@@ -73,6 +73,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // --- Game State Variables ---
   const [teams, setTeams] = useState<Team[]>([]);
   const [settings, setSettings] = useState<GameSettings>(defaultSettings);
+  const [sentences, setSentences] = useState<Sentence[]>(builtInSentences);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number>(0);
   const [purchasedSentences, setPurchasedSentences] = useState<Record<number, PurchaseLog>>({});
   const [revealedSentences, setRevealedSentences] = useState<number[]>([]);
@@ -92,6 +93,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const savedRevealed = localStorage.getItem("sa_revealed");
     const savedStarted = localStorage.getItem("sa_started");
     const savedSound = localStorage.getItem("sa_sound_enabled");
+    const savedSentences = localStorage.getItem("sa_sentences");
 
     if (savedTeams) setTeams(JSON.parse(savedTeams));
     if (savedSettings) {
@@ -108,6 +110,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setSoundEnabled(enabled);
       sounds.toggle(enabled);
     }
+    if (savedSentences) setSentences(JSON.parse(savedSentences));
   }, []);
 
   // --- Save State helpers ---
@@ -186,6 +189,20 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ];
       saveTeams(defaultTeams);
     }
+
+    // Shuffle sentences on game start so they are mixed
+    const shuffleSentences = (array: Sentence[]): Sentence[] => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+    const shuffled = shuffleSentences(builtInSentences);
+    setSentences(shuffled);
+    localStorage.setItem("sa_sentences", JSON.stringify(shuffled));
+
     setGameStarted(true);
     setCurrentSentenceIndex(0);
     setPurchasedSentences({});
@@ -206,6 +223,8 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setRevealedSentences([]);
     setTimeLeft(settings.timerDuration);
     setIsTimerActive(false);
+    setSentences(builtInSentences);
+    localStorage.removeItem("sa_sentences");
 
     // Reset team balances and scores
     saveTeams(
@@ -258,7 +277,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Record a bid purchase
   const recordSale = (teamId: string, price: number) => {
-    const currentSentence = builtInSentences[currentSentenceIndex];
+    const currentSentence = sentences[currentSentenceIndex];
     if (!currentSentence) return;
 
     // Pause timer since sentence is sold
@@ -315,7 +334,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       localStorage.setItem("sa_revealed", JSON.stringify(updatedRevealed));
 
       // Re-adjust score/cash if they got it back
-      const sentence = builtInSentences.find((s) => s.id === sentenceId);
+      const sentence = sentences.find((s) => s.id === sentenceId);
       if (sentence) {
         const teamRefund = updatedTeams.map((team) => {
           if (team.id === log.teamId) {
@@ -354,7 +373,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const revealSentence = (sentenceId: number) => {
     if (revealedSentences.includes(sentenceId)) return;
 
-    const sentence = builtInSentences.find((s) => s.id === sentenceId);
+    const sentence = sentences.find((s) => s.id === sentenceId);
     if (!sentence) return;
 
     // Mark as revealed
@@ -405,7 +424,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // --- Navigation ---
   const updateSentenceIndex = (newIndex: number) => {
-    if (newIndex >= 0 && newIndex < builtInSentences.length) {
+    if (newIndex >= 0 && newIndex < sentences.length) {
       setCurrentSentenceIndex(newIndex);
       localStorage.setItem("sa_current_index", String(newIndex));
       // Reset timer for the new sentence
@@ -426,7 +445,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     updateSentenceIndex(index);
   };
 
-  const isGameOver = gameStarted && currentSentenceIndex >= builtInSentences.length - 1 && revealedSentences.length === Object.keys(purchasedSentences).length && Object.keys(purchasedSentences).length > 0;
+  const isGameOver = gameStarted && currentSentenceIndex >= sentences.length - 1 && revealedSentences.length === Object.keys(purchasedSentences).length && Object.keys(purchasedSentences).length > 0;
 
   // Celebrate on game over
   useEffect(() => {
@@ -440,7 +459,7 @@ export const GameStateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       value={{
         teams,
         settings,
-        sentences: builtInSentences,
+        sentences: sentences,
         currentSentenceIndex,
         purchasedSentences,
         revealedSentences,
